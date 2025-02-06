@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kannada Translator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="container mt-5">
+
+    <h2 class="text-center">Kannada Word Submission</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label>Word (Kannada):</label>
+            <input type="text" id="word" name="word" class="form-control" required>
+            <small class="text-danger" id="wordError" style="display: none;">Enter a word</small>
+        </div>
+
+        <div class="mb-3">
+            <label for="transit" class="form-label">Transliteration (English Form):</label>
+            <input type="text" class="form-control" id="transit" name="transit">
+        </div>
+
+        <div class="mb-3">
+            <label>Translation (English):</label>
+            <input type="text" id="translation" name="translation" class="form-control" readonly required>
+        </div>
+
+        <!-- Audio Recording -->
+        <button type="button" class="btn btn-primary" id="record">Start Recording</button>
+        <button type="button" class="btn btn-danger" id="stop" disabled>Stop Recording</button>
+        <audio id="audioPlayer" controls style="display: none;"></audio>
+        <input type="file" name="audio" id="audio" required hidden>
+        <small class="text-danger" id="audioError" style="display: none;">Record an audio file</small>
+
+        <!-- Image Upload -->
+        <div class="mb-3 mt-3">
+            <label>Upload Image:</label>
+            <input type="file" name="image" id="image" class="form-control" required>
+            <small class="text-danger" id="imageError" style="display: none;">Upload an image</small>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3" id="submitBtn">Submit</button>
+        <div class="mt-3">
+            <span id="successMessage" class="text-success" style="display: none;"></span>
+        </div>
+    </form>
+
+    <div class="mt-3">
+        <a href="{{ url_for('view_database') }}" class="btn btn-info">View Database</a>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#word').on('input', function() {
+                const word = $(this).val().trim();
+                if (word) {
+                    $.post('/transliterate', { word: word }, function(data) {
+                        if (data.transit) {
+                            $('#transit').val(data.transit);
+                            $('#suggested').text(data.transit);
+                        }
+                    });
+                }
+            });
+
+            // Make transliteration field writable but default to suggested value
+            $('#transit').on('input', function() {
+                const transitValue = $(this).val().trim();
+                if (!transitValue) {
+                    $('#transit').val($('#suggested').text());
+                }
+            });
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</body>
+</html>

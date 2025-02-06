@@ -1,0 +1,5 @@
+flask
+flask_sqlalchemy
+googletrans
+pydub
+deep_translator
